@@ -1,0 +1,19 @@
+Ctrl+Shift+s,Save
+Ctrl+Shift+e,Exit
+Ctrl+Shift+v,View
+c,Circle
+t,Triangle
+r,Rectangle
+h,Hexagon
+p,Polygon
+l,Line
+m,Pentagon
+e,Ellipse
+i,Increase size of Last drawn circle
+f,Increase size of Last drawn polygon
+e,Increase size of Last drawn triangle
+d,Increase size of Last drawn rectangle
+q,Increase size of Last drawn ellipse
+w,Increase size of Last drawn line
+a,Insert Image
+x,Toggle Color
