@@ -30,3 +30,5 @@ Now continue using your PC. The program will record keystrokes
 and will draw according to it.
 
 Use the `view` function to view the drawing and `save` function to save it
+
+#### It saves the images as .png and .eps files in a directory named myRanDrawings
