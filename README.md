@@ -1,6 +1,8 @@
 # Draw Random things
 As heading says, the program draws random _art_
 
+![An example of the drawing](https://i.imgur.com/8dYLBrl.png)
+
 ## Features
 - Draws random shapes
 - Inserts random images from the current directory
