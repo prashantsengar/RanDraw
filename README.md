@@ -1,3 +1,17 @@
+# Draw Random things
+As heading says, the program draws random _art_
+
+## Features
+- Draws random shapes
+- Inserts random images from the current directory
+- Nothing else
+
+# How to use:
+
+## Clone or download
+`git clone https://github.com/prashantsengar/RanDraw.git`
+`cd RanDraw`
+
 ## Install requirements
 - pip install -r requirements.txt
 
