@@ -12,6 +12,7 @@ As heading says, the program draws random _art_
 
 ## Clone or download
 `git clone https://github.com/prashantsengar/RanDraw.git`
+
 `cd RanDraw`
 
 ## Install requirements
