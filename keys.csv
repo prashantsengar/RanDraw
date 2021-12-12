@@ -16,4 +16,12 @@ d,Increase size of Last drawn rectangle
 q,Increase size of Last drawn ellipse
 w,Increase size of Last drawn line
 a,Insert Image
-x,Toggle Color
+x,Toggle color
+0,Increase thickness of pen 
+9,Decrease thickness of pen
+Ctrl+Shift+d,Save current render
+1,c t r
+2,c p m
+Ctrl+Shift+r,Toggle real time rendering
+Ctrl+Shift+m,Start mouse recording
+Ctrl+Shift+n,Stop mouse recording
