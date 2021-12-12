@@ -496,11 +496,11 @@ class Rectangle(Shape):
 
 class Ellipse(Shape):
     def __init__(self, turn=0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.radius = self.get_length(0)
         self.turn = turn
         self.shape = 1
         self.undo_steps = [6, True]
-        super().__init__(*args, **kwargs)
 
     def draw(self):
         self.pre_draw()
@@ -602,9 +602,9 @@ class Polygon(Shape):
 class CanvasImage:
     def __init__(self, my_turtle: MyTurtle):
         self.turtle = my_turtle
-        self.image = self.add()
         self.height = random.randint(self.turtle.screen.HEIGHT // 8, self.turtle.screen.WIDTH // 4)
         self.width = random.randint(self.turtle.screen.HEIGHT // 8, self.turtle.screen.WIDTH // 4)
+        self.image = self.add()
 
     def add(self):
         """
