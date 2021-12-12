@@ -48,6 +48,7 @@ class DrawCanvas:
         self.started = False
         self.path = path
         self.keys_dict = {}
+        self.stamps = []
 
     def get_x(self):
         return random.randint(-self.WIDTH // 8, self.WIDTH // 8)
@@ -64,7 +65,7 @@ class DrawCanvas:
             while tries < 30:
                 try:
                     file = random.choice(files)
-                    print(file)
+                    # print(file)
                     img = Image.open(file)
                     img.resize(
                         (
@@ -131,10 +132,10 @@ class DrawCanvas:
                 sh.draw()
 
             elif fun == "ellipse":
-                sh = Ellipse()
+                sh = Ellipse(my_turtle)
                 sh.draw()
             elif fun == "inc_elli":
-                sh = Ellipse()
+                sh = Ellipse(my_turtle)
                 sh.increase()
             elif fun == "polygon":
                 sh = Polygon(my_turtle, sides=0)
@@ -143,17 +144,17 @@ class DrawCanvas:
                 sh = Polygon(my_turtle, sides=0)
                 sh.increase()
             elif fun == "pentagon":
-                sh = Polygon(my_turtle, 5)
+                sh = Polygon(my_turtle, sides=5)
                 sh.draw()
             elif fun == "hexagon":
-                sh = Polygon(my_turtle, 6)
+                sh = Polygon(my_turtle, sides=6)
                 sh.increase()
             elif fun == "mouse_stop":
                 mouse_positions = my_mouse.draw()
-                print(len(mouse_positions))
+                print(f"Number of mouse positions: {len(mouse_positions)}")
                 for position in mouse_positions:
                     my_turtle.goto(position)
-                print("finished")
+                print("finished drawing mouse positions")
 
             elif fun == "toggle_clr":
                 my_turtle.toggle_should_color()
@@ -269,7 +270,7 @@ def get_color():
         random.uniform(0.00, 0.99),
         random.uniform(0.00, 0.99),
     )
-    print(color)
+    # print(color)
     return color
 
 
@@ -377,7 +378,7 @@ class MyTurtle(turtle.RawTurtle):
     	Toggle if color should be used or not
     	"""
         self.should_color = not self.should_color
-        print(self.should_color)
+        # print(self.should_color)
         # View is called here so that the effects take place before the next toggle
 
     def toggle_realtime(self):
@@ -395,7 +396,7 @@ class Shape(ABC):
         self.shape: int
         self.undo_steps: List
 
-    def get_length(self, length: int):
+    def get_length(self, length: int) -> int:
         if not length:
             length = self.turtle.drawer.get_x()
         return length
@@ -443,10 +444,10 @@ class Shape(ABC):
 
 
 class Circle(Shape):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, my_turtle, *args, **kwargs):
         self.shape = 1
         self.undo_steps = [4, True]
-        super(Circle, self).__init__(*args, **kwargs)
+        super(Circle, self).__init__(my_turtle, *args, **kwargs)
 
     def draw(self):
         self.pre_draw()
@@ -457,12 +458,12 @@ class Circle(Shape):
 
 
 class Rectangle(Shape):
-    def __init__(self, breadth=0, turn=0, *args, **kwargs):
+    def __init__(self, my_turtle, breadth=0, turn=0, *args, **kwargs):
+        super().__init__(my_turtle, *args, **kwargs)
         self.breadth = self.get_length(breadth)
         self.turn = turn
-        self.shape = 3
+        self.shape = 4 
         self.undo_steps = [10, True]
-        super().__init__(*args, **kwargs)
 
     def draw(self):
         self.pre_draw()
@@ -495,8 +496,8 @@ class Rectangle(Shape):
 
 
 class Ellipse(Shape):
-    def __init__(self, turn=0, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, my_turtle, turn=0, *args, **kwargs):
+        super().__init__(my_turtle, *args, **kwargs)
         self.radius = self.get_length(0)
         self.turn = turn
         self.shape = 1
@@ -512,10 +513,10 @@ class Ellipse(Shape):
 
 
 class Line(Shape):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, my_turtle, *args, **kwargs):
         self.shape = 0
         self.undo_steps = [0, False]
-        super().__init__(*args, **kwargs)
+        super().__init__(my_turtle, *args, **kwargs)
 
     def draw(self):
         self.pre_draw()
@@ -538,8 +539,8 @@ class Line(Shape):
 
 
 class Triangle(Shape):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, my_turtle, *args, **kwargs):
+        super().__init__(my_turtle, *args, **kwargs)
         self.shape = 3
         self.undo_steps = [5, True]
         # coods have -> [[x1, y1], [x2, y2], [x3, y3]]
@@ -572,14 +573,14 @@ class Triangle(Shape):
 
 
 class Polygon(Shape):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, my_turtle, *args, **kwargs):
         self.sides = kwargs['sides']
         if self.sides == 0:
             self.sides = random.randint(5, 12)
         self.exteriorAngle = 360 / self.sides
         self.shape = 5
         self.undo_steps = [2 * self.sides + 3, True]
-        super().__init__(*args, **kwargs)
+        super().__init__(my_turtle, *args)
 
     def draw(self):
         self.pre_draw()
@@ -591,7 +592,7 @@ class Polygon(Shape):
         self.post_draw()
 
     def get_last_details(self):
-        if self.turtle.get_last_shape() >= self.shape:
+        if self.turtle.get_last_shape() and self.turtle.get_last_shape() >= self.shape:
             self.length = self.turtle.get_last_side()
             self.color = self.turtle.get_last_color()
             return True
@@ -602,8 +603,8 @@ class Polygon(Shape):
 class CanvasImage:
     def __init__(self, my_turtle: MyTurtle):
         self.turtle = my_turtle
-        self.height = random.randint(self.turtle.screen.HEIGHT // 8, self.turtle.screen.WIDTH // 4)
-        self.width = random.randint(self.turtle.screen.HEIGHT // 8, self.turtle.screen.WIDTH // 4)
+        self.height = random.randint(self.turtle.drawer.HEIGHT // 8, self.turtle.drawer.WIDTH // 4)
+        self.width = random.randint(self.turtle.drawer.HEIGHT // 8, self.turtle.drawer.WIDTH // 4)
         self.image = self.add()
 
     def add(self):
@@ -618,7 +619,6 @@ class CanvasImage:
             while tries < 30:
                 try:
                     file = random.choice(files)
-                    print(file)
                     img = Image.open(file)
                     img.resize(
                         (
@@ -631,16 +631,15 @@ class CanvasImage:
                     return filename
                 except IOError:
                     tries += 1
-        else:
-            logging.warning("There is no image")
-            return 'temp.gif'
+        logging.warning("There is no image")
+        return 'temp.gif'
 
     def draw(self):
         self.turtle.randomize_position()
         self.turtle.canvas.register_shape(self.image)
         self.turtle.shape(self.image)
         stamp = self.turtle.stamp()
-        self.turtle.screen.stamps.append(stamp)
+        self.turtle.drawer.stamps.append(stamp)
 
 
 class MouseDrawer:
