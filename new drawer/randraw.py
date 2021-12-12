@@ -1,18 +1,18 @@
+import collections
+import csv
+import datetime
+import logging
+import os
+import random
+import shutil
 import threading
+import turtle
+from abc import abstractmethod, ABC
 from typing import List
 
 import keyboard
-import turtle
-import random
-from PIL import Image
-import os
-import logging
-import datetime
-import shutil
-import collections
-import csv
 import pyautogui
-from abc import abstractmethod, ABC
+from PIL import Image
 
 temp_path = ''
 
@@ -104,7 +104,7 @@ class DrawCanvas:
             if fun == "circle":
                 sh = Circle(my_turtle)
                 sh.draw()
-            elif fun == "i":
+            elif fun == "inc_circle":
                 sh = Circle(my_turtle)
                 sh.increase()
             elif fun == "rectangle":
@@ -116,34 +116,37 @@ class DrawCanvas:
             elif fun == "triangle":
                 sh = Triangle(my_turtle)
                 sh.draw()
-            elif fun == "y":
+            elif fun == "inc_tri":
                 sh = Triangle(my_turtle)
                 sh.increase()
-            elif fun == "l":
+            elif fun == "line":
                 sh = Line(my_turtle)
                 sh.draw()
-            elif fun == "w":
+            elif fun == "inc_line":
                 sh = Line(my_turtle)
                 sh.increase()
 
-            # elif fun == "e":
-            #     sh = Ellipse()
-            #     sh.draw()
-            # elif fun == "q":
-            #     sh = Ellipse()
-            #     sh.draw()
+            elif fun == "insert_img":
+                sh = CanvasImage(my_turtle)
+                sh.draw()
 
+            elif fun == "ellipse":
+                sh = Ellipse()
+                sh.draw()
+            elif fun == "inc_elli":
+                sh = Ellipse()
+                sh.increase()
             elif fun == "polygon":
-                sh = Polygon(sides=0)
-                sh.draw(my_turtle)
+                sh = Polygon(my_turtle, sides=0)
+                sh.draw()
             elif fun == "inc_polygon":
                 sh = Polygon(my_turtle, sides=0)
                 sh.increase()
-            elif fun == "m":
+            elif fun == "pentagon":
                 sh = Polygon(my_turtle, 5)
                 sh.draw()
-            elif fun == "f":
-                sh = Polygon(my_turtle)
+            elif fun == "hexagon":
+                sh = Polygon(my_turtle, 6)
                 sh.increase()
             elif fun == "mouse_stop":
                 mouse_positions = my_mouse.draw()
@@ -152,15 +155,11 @@ class DrawCanvas:
                     my_turtle.goto(position)
                 print("finished")
 
-##            elif fun == "a":
-##                sh = CanvasImage()
-##                sh.draw()
-
             elif fun == "toggle_clr":
                 my_turtle.toggle_should_color()
-            elif fun == "0":
+            elif fun == "inc_thick":
                 my_turtle.increase_pen_size()
-            elif fun == "9":
+            elif fun == "dec_thick":
                 my_turtle.decrease_pen_size()
 
         logging.warning(f"Fun li after popping: {self.data}")
@@ -228,12 +227,12 @@ class DrawCanvas:
 
     def key_fun(self, my_turtle, my_mouse):
         try:
-            keyboard.add_hotkey(self.keys_dict["save"], self.save, args=(my_turtle, my_mouse, ))
-            keyboard.add_hotkey(self.keys_dict["view"], self.view, args=(my_turtle, my_mouse, ))
+            keyboard.add_hotkey(self.keys_dict["save"], self.save, args=(my_turtle, my_mouse,))
+            keyboard.add_hotkey(self.keys_dict["view"], self.view, args=(my_turtle, my_mouse,))
 
             for key in self.keys_dict:
                 try:
-                    keyboard.add_hotkey(self.keys_dict[key], self.push_fun, args=(key, my_turtle, my_mouse, ))
+                    keyboard.add_hotkey(self.keys_dict[key], self.push_fun, args=(key, my_turtle, my_mouse,))
                 except:
                     print(key)
 
@@ -284,12 +283,15 @@ class MyTurtle(turtle.RawTurtle):
         self.last_color = (0, 0, 0)
         self.should_color = True
         self.realtime = False
+        self.stamps = []
+        self.canvas = None
 
         # super().__init__(screen)
-        #super().__init__()
+        # super().__init__()
 
     def start(self):
         screen = turtle.Screen()
+        self.canvas = screen
         super().__init__(screen)
         self.ht()
         self.drawer.started = True
@@ -393,7 +395,7 @@ class Shape(ABC):
         self.shape: int
         self.undo_steps: List
 
-    def get_length(self, length):
+    def get_length(self, length: int):
         if not length:
             length = self.turtle.drawer.get_x()
         return length
@@ -444,7 +446,7 @@ class Circle(Shape):
     def __init__(self, *args, **kwargs):
         self.shape = 1
         self.undo_steps = [4, True]
-        super(Circle, self).__init__(*args, **kwargs)        
+        super(Circle, self).__init__(*args, **kwargs)
 
     def draw(self):
         self.pre_draw()
@@ -493,7 +495,20 @@ class Rectangle(Shape):
 
 
 class Ellipse(Shape):
-    pass
+    def __init__(self, turn=0, *args, **kwargs):
+        self.radius = self.get_length(0)
+        self.turn = turn
+        self.shape = 1
+        self.undo_steps = [6, True]
+        super().__init__(*args, **kwargs)
+
+    def draw(self):
+        self.pre_draw()
+        self.turtle.right(45) if self.turn else turtle.left(45)
+        for loop in range(2):
+            self.turtle.circle(self.radius, 90)
+            self.turtle.circle(self.radius / 2, 90)
+        self.post_draw()
 
 
 class Line(Shape):
@@ -529,7 +544,6 @@ class Triangle(Shape):
         self.undo_steps = [5, True]
         # coods have -> [[x1, y1], [x2, y2], [x3, y3]]
         self.coods = self.get_coods()
-        
 
     def get_coods(self):
         coods = []
@@ -586,8 +600,47 @@ class Polygon(Shape):
 
 
 class CanvasImage:
-    def __init__(self):
-        pass
+    def __init__(self, my_turtle: MyTurtle):
+        self.turtle = my_turtle
+        self.image = self.add()
+        self.height = random.randint(self.turtle.screen.HEIGHT // 8, self.turtle.screen.WIDTH // 4)
+        self.width = random.randint(self.turtle.screen.HEIGHT // 8, self.turtle.screen.WIDTH // 4)
+
+    def add(self):
+        """
+        Add a random image present in the create_folder
+        """
+        files = os.listdir()
+        files.remove('temp.gif')
+        logging.warning(files)
+        if len(files) > 0:
+            tries = 0
+            while tries < 30:
+                try:
+                    file = random.choice(files)
+                    print(file)
+                    img = Image.open(file)
+                    img.resize(
+                        (
+                            self.height, self.width
+                        )
+                    )
+                    filename = f'{temp_path}/{datetime.datetime.now().strftime("%Y-%m-%d--%HH-%MM-%SS")}.gif'
+                    print(filename)
+                    img.save(filename)
+                    return filename
+                except IOError:
+                    tries += 1
+        else:
+            logging.warning("There is no image")
+            return 'temp.gif'
+
+    def draw(self):
+        self.turtle.randomize_position()
+        self.turtle.canvas.register_shape(self.image)
+        self.turtle.shape(self.image)
+        stamp = self.turtle.stamp()
+        self.turtle.screen.stamps.append(stamp)
 
 
 class MouseDrawer:
@@ -595,20 +648,20 @@ class MouseDrawer:
         self.positions = []
 
     def record(self, keys_dict, height, width):
-##        ts = turtle.getscreen()
-##        mycanvas = ts.getcanvas()
+        ##        ts = turtle.getscreen()
+        ##        mycanvas = ts.getcanvas()
         X, Y = pyautogui.size()
-        centre_x, centre_y = X//2, Y//2
-        
+        centre_x, centre_y = X // 2, Y // 2
+
         while not keyboard.is_pressed(keys_dict['mouse_stop']):
-##            x, y = mycanvas.winfo_pointerx(), mycanvas.winfo_pointery()
-##            x = x if x < width else width - 1
-##            y = y if y < height else height - 1
+            ##            x, y = mycanvas.winfo_pointerx(), mycanvas.winfo_pointery()
+            ##            x = x if x < width else width - 1
+            ##            y = y if y < height else height - 1
             x, y = pyautogui.position()
             x -= centre_x
             y -= centre_y
-            
-            if self.positions and self.positions[-1]!=(x,y):
+
+            if self.positions and self.positions[-1] != (x, y):
                 self.positions.append((x, y))
             elif not self.positions:
                 self.positions.append((x, y))
